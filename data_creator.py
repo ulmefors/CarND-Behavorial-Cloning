@@ -60,16 +60,21 @@ def save_data(X_train, y_train, X_val, y_val):
     print('Saved data')
 
 
-start_time = time.time()
+def main():
+    start_time = time.time()
 
-X_train, y_train = load_data()
-X_train, X_val, y_train, y_val = pre_processor.process(X_train, y_train, norm_count=True)
+    X_train, y_train = load_data()
+    X_train, X_val, y_train, y_val = pre_processor.process(X_train, y_train, norm_count=True)
 
-end_time = time.time()
-print('Elapsed time {:.1f} s'.format(end_time - start_time))
+    end_time = time.time()
+    print('Elapsed time {:.1f} s'.format(end_time - start_time))
 
-save_data(X_train, y_train, X_val, y_val)
-plot_count(y_train, y_val)
+    # save_data(X_train, y_train, X_val, y_val)
+    # plot_count(y_train, y_val)
+
+
+if __name__ == "__main__":
+   main()
 
 
 

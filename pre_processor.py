@@ -7,7 +7,7 @@ __nb_bins__ = 100
 
 # Normalize pixel values from 0-255 to approx [-0.5, 0.5]
 def normalize(X):
-    # Subtract mean to center around 0
+    # Subtract to center around 0
     X_tmp = np.add(X, - 127.5)
 
     # Divide by 255
@@ -47,7 +47,7 @@ def process(X, y, norm_count=False):
     X, y = shuffle(X, y)
 
     # Split into train and validation set
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.125)
 
     X_train = normalize(X_train)
     X_val = normalize(X_val)
