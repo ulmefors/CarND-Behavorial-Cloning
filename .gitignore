@@ -1,2 +1,6 @@
 *.app
 .idea
+bin
+data
+__pycache__
+*.p
