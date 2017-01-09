@@ -49,9 +49,6 @@ def process(X, y, norm_count=False):
     # Split into train and validation set
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.125)
 
-    X_train = normalize(X_train)
-    X_val = normalize(X_val)
-
     if norm_count:
 
         n, bins, patches = plt.hist(y_train, __nb_bins__)

@@ -17,7 +17,7 @@ def load_data():
     dir = 'data/sample/'
     driving_log = pd.read_csv(dir + 'driving_log.csv')
 
-    nb_rows = driving_log.shape[0] // 10
+    nb_rows = driving_log.shape[0] // 3
     nb_cols = driving_log.shape[1]
     col_ctr_image = 0
     col_steering = 3
@@ -55,8 +55,8 @@ def plot_count(y_train, y_val):
 
 
 def save_data(X_train, y_train, X_val, y_val):
-    pickle.dump({'features': X_train, 'labels': y_train}, open('train.p', 'wb'))
-    pickle.dump({'features': X_val, 'labels': y_val}, open('val.p', 'wb'))
+    pickle.dump({'features': np.array(X_train), 'labels': np.array(y_train)}, open('train.p', 'wb'))
+    pickle.dump({'features': np.array(X_val), 'labels': np.array(y_val)}, open('val.p', 'wb'))
     print('Saved data')
 
 
@@ -69,7 +69,7 @@ def main():
     end_time = time.time()
     print('Elapsed time {:.1f} s'.format(end_time - start_time))
 
-    # save_data(X_train, y_train, X_val, y_val)
+    save_data(X_train, y_train, X_val, y_val)
     # plot_count(y_train, y_val)
 
 
