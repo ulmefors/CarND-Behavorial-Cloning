@@ -4,17 +4,14 @@ import json
 
 import numpy as np
 import socketio
-import eventlet
 import eventlet.wsgi
-import time
-import keras
 from PIL import Image
 from PIL import ImageOps
 from flask import Flask, render_template
 from io import BytesIO
+from model import preprocess_image
 
 from keras.models import model_from_json
-from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
 
 # Fix error with Keras and TensorFlow
 import tensorflow as tf
@@ -38,11 +35,21 @@ def telemetry(sid, data):
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)
+
+    # Add the preprocessing step to match the process from training
+    image_array = preprocess_image(image_array)
+
     transformed_image_array = image_array[None, :, :, :]
-    # This model currently assumes that the features of the model are just the images. Feel free to change this.
+
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
-    # The driving model currently just outputs a constant throttle. Feel free to edit this.
-    throttle = 0.2
+
+    # Try to maintain speed close to goal speed
+    goal_speed = 20.0
+    diff = goal_speed - float(speed)
+    # Proportional control
+    c_p = 1.0
+    throttle = diff * c_p
+
     print(steering_angle, throttle)
     send_control(steering_angle, throttle)
 
@@ -66,11 +73,10 @@ if __name__ == '__main__':
     help='Path to model definition json. Model weights should be on the same path.')
     args = parser.parse_args()
     with open(args.model, 'r') as jfile:
-        if keras.__version__ >= "1.2.0":
-            model = model_from_json(json.loads(jfile.read()))
-        else:
-            model = model_from_json(jfile.read())
-
+        #if keras.__version__ >= "1.2.0":
+        #    model = model_from_json(json.loads(jfile.read()))
+        #else:
+        model = model_from_json(jfile.read())
 
     model.compile("adam", "mse")
     weights_file = args.model.replace('json', 'h5')

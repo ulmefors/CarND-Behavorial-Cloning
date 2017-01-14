@@ -8,9 +8,23 @@ import pickle
 import pre_processor
 
 
-def read_image(image_file):
+def crop_and_resize(img):
+    w = 300
+    x = 10
+    h = 99
+    y = 30
+
+    crop_img = img[y:y+h, x:x+w]
+    return cv2.resize(crop_img, (200, 66))
+
+
+def read_image(image_file, type='RGB'):
     bgr_image = cv2.imread(image_file)
-    return cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
+    resized_img = crop_and_resize(bgr_image)
+    if type is 'YUV':
+        return cv2.cvtColor(resized_img, cv2.COLOR_BGR2YUV)
+    else:
+        return cv2.cvtColor(resized_img, cv2.COLOR_BGR2RGB)
 
 
 def load_data():
@@ -18,7 +32,6 @@ def load_data():
     driving_log = pd.read_csv(dir + 'driving_log.csv')
 
     nb_rows = driving_log.shape[0] // 3
-    nb_cols = driving_log.shape[1]
     col_ctr_image = 0
     col_steering = 3
 
@@ -69,7 +82,7 @@ def main():
     end_time = time.time()
     print('Elapsed time {:.1f} s'.format(end_time - start_time))
 
-    save_data(X_train, y_train, X_val, y_val)
+    #save_data(X_train, y_train, X_val, y_val)
     # plot_count(y_train, y_val)
 
 
