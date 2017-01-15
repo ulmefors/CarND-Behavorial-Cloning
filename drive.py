@@ -5,6 +5,7 @@ import json
 import numpy as np
 import socketio
 import eventlet.wsgi
+import keras
 from PIL import Image
 from PIL import ImageOps
 from flask import Flask, render_template
@@ -73,10 +74,10 @@ if __name__ == '__main__':
     help='Path to model definition json. Model weights should be on the same path.')
     args = parser.parse_args()
     with open(args.model, 'r') as jfile:
-        #if keras.__version__ >= "1.2.0":
-        #    model = model_from_json(json.loads(jfile.read()))
-        #else:
-        model = model_from_json(jfile.read())
+        if keras.__version__ >= "1.2.0":
+            model = model_from_json(json.loads(jfile.read()))
+        else:
+            model = model_from_json(jfile.read())
 
     model.compile("adam", "mse")
     weights_file = args.model.replace('json', 'h5')

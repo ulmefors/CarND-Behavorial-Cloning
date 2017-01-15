@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import time
 import pickle
 import pre_processor
-
+import model
 
 def crop_and_resize(img):
     w = 300
@@ -31,7 +31,7 @@ def load_data():
     dir = 'data/sample/'
     driving_log = pd.read_csv(dir + 'driving_log.csv')
 
-    nb_rows = driving_log.shape[0] // 3
+    nb_rows = driving_log.shape[0]
     col_ctr_image = 0
     col_steering = 3
 
@@ -51,18 +51,40 @@ def load_data():
 
     return X_train, y_train
 
+def plot_data():
+    dir = 'data/sample/'
+    data_frame = pd.read_csv(dir + 'driving_log.csv', usecols=[0, 1, 2, 3])
 
-def plot_count(y_train, y_val):
+    data_row = data_frame.loc[400]
+
+    image = data_row['center']
+
+    nb_examples = 12
+
+    images = []
+    for i in range(nb_examples):
+        images.append(model.augment_brightness_camera_images(image))
+
+    j = 0
+    for img in images:
+        plt.subplot(3,4, j)
+        j += 1
+    plt.plot(image)
+    plt.show()
+
+
+def plot_count(y_train):
     nb_bins = pre_processor.__nb_bins__
-    plt.subplot(1, 2, 1)
-    plt.hist(y_val, nb_bins)
-    plt.xlabel('Steering angle')
-    plt.ylabel('Count validation')
 
-    plt.subplot(1, 2, 2)
+    #plt.subplot(1, 2, 1)
+    #plt.hist(y_val, nb_bins)
+    #plt.xlabel('Steering angle')
+    #plt.ylabel('Count validation')
+
+    #plt.subplot(1, 2, 2)
     plt.hist(y_train, nb_bins)
     plt.xlabel('Steering angle')
-    plt.ylabel('Count training (normalized)')
+    plt.ylabel('Count training')
 
     plt.show()
 
@@ -76,25 +98,17 @@ def save_data(X_train, y_train, X_val, y_val):
 def main():
     start_time = time.time()
 
-    X_train, y_train = load_data()
-    X_train, X_val, y_train, y_val = pre_processor.process(X_train, y_train, norm_count=True)
+    #X_train, y_train = load_data()
+    #X_train, X_val, y_train, y_val = pre_processor.process(X_train, y_train, norm_count=False)
 
     end_time = time.time()
     print('Elapsed time {:.1f} s'.format(end_time - start_time))
 
     #save_data(X_train, y_train, X_val, y_val)
-    # plot_count(y_train, y_val)
+    #plot_count(y_train)
 
 
 if __name__ == "__main__":
    main()
-
-
-
-
-
-
-
-
 
 
