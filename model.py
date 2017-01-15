@@ -8,7 +8,7 @@ import os
 import matplotlib.pyplot as plt
 from keras.utils.visualize_util import plot as kerasplot
 
-rows, cols, ch = 20, 64, 3
+rows, cols, ch = 18, 48, 3
 
 TARGET_SIZE = (cols, rows)
 IMAGE_SHAPE = (rows, cols, ch)
@@ -35,7 +35,7 @@ def augment_brightness_camera_images(image):
 
 def preprocess_image(image):
     # Crop image - remove sky and car hood
-    image = image[32:128, :, :]
+    image = image[20:140, :, :]
 
     # Reduce image size using CV2 INTER_AREA
     # http://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#resize
@@ -115,7 +115,7 @@ def plot_loss(history):
 
 
 def main():
-    BATCH_SIZE = 32
+    BATCH_SIZE = 128
 
     data_frame = pd.read_csv('data/sample/driving_log.csv', usecols=[0, 1, 2, 3])
 
@@ -130,7 +130,9 @@ def main():
 
     # Remove all zero angle data from training set to avoid straight driving bias
     # This is quite drastic but proved quite effective
-    training_data = training_data[training_data.steering != 0]
+    training_data_non_zero = training_data[training_data.steering != 0]
+    training_data = pd.concat([training_data_non_zero, training_data, training_data_non_zero])
+    training_data = training_data.sample(frac=1).reset_index(drop=True)
 
     training_generator = get_generator(training_data, batch_size=BATCH_SIZE)
     validation_data_generator = get_generator(validation_data, batch_size=BATCH_SIZE, validation=True)
@@ -140,12 +142,12 @@ def main():
     model.summary()
 
     # Load weights from previous training if more training epochs are required
-    #model.load_weights('model.h5')
+    # model.load_weights('model.h5')
 
-    samples_per_epoch = (training_data.shape[0] * 8 // BATCH_SIZE) * BATCH_SIZE
+    samples_per_epoch = (training_data.shape[0] // BATCH_SIZE) * BATCH_SIZE
 
     history = model.fit_generator(training_generator, validation_data=validation_data_generator,
-        samples_per_epoch=samples_per_epoch, nb_epoch=40, nb_val_samples=validation_data.shape[0])
+        samples_per_epoch=samples_per_epoch, nb_epoch=20, nb_val_samples=validation_data.shape[0])
 
     print("Saving model weights and configuration file.")
 
@@ -153,13 +155,13 @@ def main():
     with open('model.json', 'w') as outfile:
         json.dump(model.to_json(), outfile)
 
-    plot_loss(history)
-
     # Save visualization of model
     output_dir = './outputs/'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     kerasplot(model, to_file=output_dir + 'model.png', show_shapes=True)
+
+    # plot_loss(history)
 
 
 if __name__ == "__main__":
