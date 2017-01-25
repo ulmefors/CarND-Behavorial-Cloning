@@ -162,7 +162,7 @@ def get_model():
     return model
 
 def get_small_model():
-    ch, row, col = 3, 20, 64  # camera format
+    ch, row, col = 3, 30, 96  # camera format
     shape = (row, col, ch)
 
     model = Sequential()
@@ -176,23 +176,25 @@ def get_small_model():
     # 1 x 1 convolution to learn best color space (credit to Vivek blog post)
     model.add(Convolution2D(3, 1, 1, border_mode="same", activation='relu'))
 
-    model.add(Convolution2D(8, 2, 2, subsample=(2, 2), border_mode='valid', activation='relu'))
+    model.add(Convolution2D(16, 5, 5, subsample=(2, 2), border_mode='valid', activation='relu'))
 
-    model.add(Convolution2D(16, 2, 2, subsample=(2, 2), border_mode='valid', activation='relu'))
+    model.add(Dropout(0.25))
 
-    model.add(Convolution2D(32, 2, 2, subsample=(1, 1), border_mode='valid', activation='relu'))
+    model.add(Convolution2D(32, 3, 3, subsample=(2, 2), border_mode='valid', activation='relu'))
+
+    model.add(Dropout(0.25))
+
+    model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode='valid', activation='relu'))
+
+    model.add(Dropout(0.25))
+
+    model.add(Convolution2D(128, 3, 3, subsample=(1, 1), border_mode='valid', activation='relu'))
+
     model.add(Flatten())
     model.add(Dropout(0.5))
 
     model.add(Dense(512))
     model.add(Dropout(0.5))
-    model.add(ELU())
-
-    model.add(Dense(64))
-    model.add(ELU())
-
-    model.add(Dense(16))
-    model.add(ELU())
 
     model.add(Dense(1))
 

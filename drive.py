@@ -48,7 +48,7 @@ def telemetry(sid, data):
     goal_speed = 20.0
     diff = goal_speed - float(speed)
     # Proportional control
-    c_p = 1.0
+    c_p = 0.6
     throttle = diff * c_p
 
     print(steering_angle, throttle)

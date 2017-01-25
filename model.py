@@ -8,7 +8,7 @@ import os
 import matplotlib.pyplot as plt
 from keras.utils.visualize_util import plot as kerasplot
 
-rows, cols, ch = 20, 64, 3
+rows, cols, ch = 30, 96, 3
 
 TARGET_SIZE = (cols, rows)
 IMAGE_SHAPE = (rows, cols, ch)
@@ -22,8 +22,9 @@ def augment_brightness_camera_images(image):
     output = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
     # Randomly generate the brightness modification factor
-    # Add a constant so that it prevents the image from being completely dark. Range 0.25-1.25.
-    random_bright = .25 + np.random.uniform()
+    # Add a constant so that it prevents the image from being completely dark. Range 0.25-1.00.
+    v_const = 0.25
+    random_bright = v_const + np.random.uniform() * (1 - v_const)
 
     # Apply the brightness modification to the V channel
     output[:, :, 2] = output[:, :, 2] * random_bright
@@ -35,7 +36,7 @@ def augment_brightness_camera_images(image):
 
 def preprocess_image(image):
     # Crop image - remove sky and car hood
-    image = image[32:128, :, :]
+    image = image[30:130, :, :]
 
     # Reduce image size using CV2 INTER_AREA
     # http://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#resize
@@ -48,7 +49,7 @@ def get_augmented_row(row, validation=False):
     # Credit to Vivek Yadav and Subodh Malgonde for the foundation of augmentation techniques
 
     # Validation data will not be augmented
-    steering_adjust = 0.25
+    steering_adjust = 0.20
 
     steering = row['steering']
 
@@ -111,6 +112,7 @@ def plot_loss(history):
     plt.plot(history.history['loss'] / history.history['loss'][0], '-b')
     plt.plot(history.history['val_loss'] / history.history['val_loss'][0], '-r')
     plt.legend(['training', 'validation'])
+    plt.yscale('log')
     plt.show()
 
 
@@ -130,7 +132,12 @@ def main():
 
     # Remove all zero angle data from training set to avoid straight driving bias
     # This is quite drastic but proved quite effective
-    training_data = training_data[training_data.steering != 0]
+
+    training_data_non_zero = training_data[training_data.steering != 0]
+    training_data = pd.concat([training_data_non_zero, training_data.sample(frac=0.1)])
+    training_data = training_data.reset_index(drop=True)
+    #training_data = pd.concat([training_data_non_zero, training_data, training_data_non_zero])
+    #training_data = training_data.sample(frac=1).reset_index(drop=True)
 
     training_generator = get_generator(training_data, batch_size=BATCH_SIZE)
     validation_data_generator = get_generator(validation_data, batch_size=BATCH_SIZE, validation=True)
@@ -142,10 +149,10 @@ def main():
     # Load weights from previous training if more training epochs are required
     #model.load_weights('model.h5')
 
-    samples_per_epoch = (training_data.shape[0] * 8 // BATCH_SIZE) * BATCH_SIZE
+    samples_per_epoch = (training_data.shape[0] // BATCH_SIZE) * BATCH_SIZE
 
     history = model.fit_generator(training_generator, validation_data=validation_data_generator,
-        samples_per_epoch=samples_per_epoch, nb_epoch=40, nb_val_samples=validation_data.shape[0])
+        samples_per_epoch=samples_per_epoch, nb_epoch=100, nb_val_samples=validation_data.shape[0])
 
     print("Saving model weights and configuration file.")
 
