@@ -176,7 +176,7 @@ def get_small_model():
     # 1 x 1 convolution to learn best color space (credit to Vivek blog post)
     model.add(Convolution2D(3, 1, 1, border_mode="same", activation='relu'))
 
-    model.add(Convolution2D(8, 3, 3, subsample=(2, 2), border_mode='valid', activation='relu'))
+    model.add(Convolution2D(16, 3, 3, subsample=(2, 2), border_mode='valid', activation='relu'))
 
     model.add(Convolution2D(16, 3, 3, subsample=(1, 1), border_mode='valid', activation='relu'))
 
