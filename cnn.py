@@ -176,27 +176,20 @@ def get_small_model():
     # 1 x 1 convolution to learn best color space (credit to Vivek blog post)
     model.add(Convolution2D(3, 1, 1, border_mode="same", activation='relu'))
 
-    model.add(Convolution2D(8, 2, 2, subsample=(2, 2), border_mode='valid', activation='relu'))
+    model.add(Convolution2D(8, 3, 3, subsample=(2, 2), border_mode='valid', activation='relu'))
 
-    model.add(Convolution2D(16, 2, 2, subsample=(2, 2), border_mode='valid', activation='relu'))
+    model.add(Convolution2D(16, 3, 3, subsample=(1, 1), border_mode='valid', activation='relu'))
 
-    model.add(Convolution2D(32, 2, 2, subsample=(1, 1), border_mode='valid', activation='relu'))
+    model.add(Convolution2D(16, 3, 3, subsample=(1, 1), border_mode='valid', activation='relu'))
     model.add(Flatten())
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
 
     model.add(Dense(512))
-    model.add(Dropout(0.5))
-    model.add(ELU())
-
-    model.add(Dense(64))
-    model.add(ELU())
-
-    model.add(Dense(16))
-    model.add(ELU())
+    model.add(Dropout(0.3))
 
     model.add(Dense(1))
 
-    model.compile(optimizer=Adam(lr=0.0001), loss="mse")
+    model.compile(optimizer=Adam(lr=0.003), loss="mse")
 
     return model
 
