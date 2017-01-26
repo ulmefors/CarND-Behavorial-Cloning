@@ -182,10 +182,10 @@ def get_small_model():
 
     model.add(Convolution2D(16, 3, 3, subsample=(1, 1), border_mode='valid', activation='relu'))
     model.add(Flatten())
-    model.add(Dropout(0.3))
+    model.add(Dropout(0.4))
 
     model.add(Dense(512))
-    model.add(Dropout(0.3))
+    model.add(Dropout(0.4))
 
     model.add(Dense(1))
 

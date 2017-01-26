@@ -146,7 +146,7 @@ def main():
     samples_per_epoch = (training_data.shape[0] * 8 // BATCH_SIZE) * BATCH_SIZE
 
     history = model.fit_generator(training_generator, validation_data=validation_data_generator,
-        samples_per_epoch=samples_per_epoch, nb_epoch=5, nb_val_samples=validation_data.shape[0])
+        samples_per_epoch=samples_per_epoch, nb_epoch=10, nb_val_samples=validation_data.shape[0])
 
     print("Saving model weights and configuration file.")
 
