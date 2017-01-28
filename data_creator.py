@@ -1,111 +1,104 @@
-# Create and train model
 import pandas as pd
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-import time
-import pickle
-import pre_processor
 import model
-
-def crop_and_resize(img):
-    w = 300
-    x = 10
-    h = 99
-    y = 30
-
-    crop_img = img[y:y+h, x:x+w]
-    return cv2.resize(crop_img, (200, 66))
+from keras.preprocessing.image import img_to_array, load_img
 
 
-def read_image(image_file, type='RGB'):
-    bgr_image = cv2.imread(image_file)
-    resized_img = crop_and_resize(bgr_image)
-    if type is 'YUV':
-        return cv2.cvtColor(resized_img, cv2.COLOR_BGR2YUV)
-    else:
-        return cv2.cvtColor(resized_img, cv2.COLOR_BGR2RGB)
+def plot_count(data_frame):
+    nb_bins = 100
 
+    data_original = data_frame['steering']
+    data_non_zero = data_original[data_original != 0]
+    #data_non_zero = data_non_zero[data_non_zero < 0.5]
+    #data_non_zero = data_non_zero[-0.5 < data_non_zero]
 
-def load_data():
-    dir = 'data/sample/'
-    driving_log = pd.read_csv(dir + 'driving_log.csv')
-
-    nb_rows = driving_log.shape[0]
-    col_ctr_image = 0
-    col_steering = 3
-
-    center_images = driving_log.ix[:nb_rows - 1, col_ctr_image]
-    y_train = driving_log.ix[:nb_rows - 1, col_steering]
-
-    file_name = dir + center_images[0]
-    sample_image = read_image(file_name)
-
-    # Initialize X_train array
-    X_train = np.zeros((nb_rows,) + sample_image.shape)
-
-    for i in range(nb_rows):
-        image = read_image(dir + center_images[i])
-        X_train[i] = image
-    assert (X_train.shape[0] == y_train.shape[0])
-
-    return X_train, y_train
-
-def plot_data():
-    dir = 'data/sample/'
-    data_frame = pd.read_csv(dir + 'driving_log.csv', usecols=[0, 1, 2, 3])
-
-    data_row = data_frame.loc[400]
-
-    image = data_row['center']
-
-    nb_examples = 12
-
-    images = []
-    for i in range(nb_examples):
-        images.append(model.augment_brightness_camera_images(image))
-
-    j = 0
-    for img in images:
-        plt.subplot(3,4, j)
-        j += 1
-    plt.plot(image)
-    plt.show()
-
-
-def plot_count(y_train):
-    nb_bins = pre_processor.__nb_bins__
-
-    #plt.subplot(1, 2, 1)
-    #plt.hist(y_val, nb_bins)
-    #plt.xlabel('Steering angle')
-    #plt.ylabel('Count validation')
-
-    #plt.subplot(1, 2, 2)
-    plt.hist(y_train, nb_bins)
+    plt.subplot(1, 2, 1)
+    plt.hist(data_original, nb_bins)
+    plt.title('Original distribution')
     plt.xlabel('Steering angle')
-    plt.ylabel('Count training')
+    plt.ylabel('Sample count')
+
+    plt.subplot(1, 2, 2)
+    plt.hist(data_non_zero, nb_bins)
+    plt.title('Modified distribution')
+    plt.xlabel('Steering angle')
+    plt.ylabel('Sample count')
 
     plt.show()
 
 
-def save_data(X_train, y_train, X_val, y_val):
-    pickle.dump({'features': np.array(X_train), 'labels': np.array(y_train)}, open('train.p', 'wb'))
-    pickle.dump({'features': np.array(X_val), 'labels': np.array(y_val)}, open('val.p', 'wb'))
-    print('Saved data')
+def plot_three_cameras(data_point):
+    steering = data_point['steering']
+
+    cameras = ['left', 'center', 'right']
+
+    i = 0
+    offset = 0.25
+    for camera in cameras:
+        num = i + 1
+        title = "{0:.3f}".format(steering - (num - 2) * offset)
+        image = load_img('data/sample/' + data_point[camera].strip())
+        image = np.array(img_to_array(image), dtype=np.uint8)
+        plt.subplot(1, 3, num)
+        plt.axis("off")
+        plt.title(title)
+        plt.imshow(image)
+        i += 1
+    plt.show()
+
+
+def plot_horozontal_flip(data_point):
+    steering = data_point['steering']
+
+    image = load_img('data/sample/' + data_point['center'].strip())
+    image = np.array(img_to_array(image), dtype=np.uint8)
+
+    image_flip = cv2.flip(image, 1)
+
+    plt.subplot(1, 2, 1)
+    plt.axis("off")
+    plt.title("{0:.2f}".format(steering))
+    plt.imshow(image)
+
+    plt.subplot(1, 2, 2)
+    plt.axis("off")
+    plt.title("{0:.2f}".format(-steering))
+    plt.imshow(image_flip)
+
+    plt.show()
+
+
+def plot_brightnes_modification(data_point):
+
+    image = load_img('data/sample/' + data_point['center'].strip())
+    image = np.array(img_to_array(image), dtype=np.uint8)
+
+    cols = 5
+    rows = 3
+    num = cols * rows
+
+    for i in range(num):
+        plt.subplot(rows, cols, i + 1)
+        plt.axis("off")
+        image_new = model.augment_brightness_camera_images(image)
+        plt.imshow(image_new)
+
+    plt.show()
 
 
 def main():
-    start_time = time.time()
 
-    #X_train, y_train = load_data()
-    #X_train, X_val, y_train, y_val = pre_processor.process(X_train, y_train, norm_count=False)
+    data_frame = pd.read_csv('data/sample/driving_log.csv', usecols=[0, 1, 2, 3])
 
-    end_time = time.time()
-    print('Elapsed time {:.1f} s'.format(end_time - start_time))
+    sample = 3918 # 3968
+    data_point = data_frame.loc[sample]
 
-    #save_data(X_train, y_train, X_val, y_val)
-    #plot_count(y_train)
+    # plot_three_cameras(data_point)
+    # plot_horozontal_flip(data_point)
+    # plot_brightnes_modification(data_point)
+    plot_count(data_frame)
 
 
 if __name__ == "__main__":
