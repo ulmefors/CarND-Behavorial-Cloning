@@ -35,7 +35,7 @@ def augment_brightness_camera_images(image):
 
 def preprocess_image(image):
     # Crop image - remove sky and car hood
-    image = image[32:128, :, :]
+    image = image[30:130, :, :]
 
     # Reduce image size using CV2 INTER_AREA
     # http://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#resize
@@ -48,7 +48,7 @@ def get_augmented_row(row, validation=False):
     # Credit to Vivek Yadav and Subodh Malgonde for the foundation of augmentation techniques
 
     # Validation data will not be augmented
-    steering_adjust = 0.25
+    steering_adjust = 0.30
 
     steering = row['steering']
 
@@ -136,7 +136,7 @@ def main():
     training_generator = get_generator(training_data, batch_size=BATCH_SIZE)
     validation_data_generator = get_generator(validation_data, batch_size=BATCH_SIZE, validation=True)
 
-    model = cnn.get_small_model()
+    model = cnn.get_model()
 
     model.summary()
 

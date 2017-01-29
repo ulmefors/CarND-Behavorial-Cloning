@@ -10,10 +10,10 @@ is to teach a car to steer around a track by feeding camera images and steering 
 The data used was entirely from Udacity 
 [Track 1 sample data](https://d17h27t6h515a5.cloudfront.net/topher/2016/December/584f6edd_data/data.zip) which consists
 of more than 8000 rows, each of which has three front-facing camera images as well as a steering wheel reading.
- Positive reading indicates right turn and negative reading left turn. For complex CNNs it's always desired to
- have access to large amounts of data in order to build a model that generalizes well.
+Positive reading indicates right turn and negative reading left turn. For complex CNNs it's always desired to
+have access to large amounts of data in order to build a model that generalizes well.
  
- The sample data had the following distribution with a bias for driving straight. It was found that using this data as-is resulted in the car
+  The sample data had the following distribution with a bias for driving straight. It was found that using this data as-is resulted in the car
   driving straight when arriving at the first corner, presumably because the model can minimize error
   by predicting steering values around 0. By removing all rows with steering = 0 we obtain a more balanced distribution.
   ![Steering distribution](img/figure_7.png)
@@ -24,7 +24,6 @@ augmentation techniques used in this project are
 - Right/left camera offset (use right and left camera images for same data point and add an offset to the steering angle)
 - Horizontal flipping (removes any left/right bias that will appear in a circular lap)
 - Brightness modification (convert to HSV color space and change V channel to simulate different lighting conditions)
-
 
 ### Left/right camera offset
 For every data point there are three camera images taken at the left, center and right of the car.
@@ -50,12 +49,22 @@ multiplied by a random correction factor ranging from 0.25 to 1.00. Examples are
 ![Brightness modification](img/figure_6.png)
 Thanks to Vivek Yadav for the idea and suggestion for implementation.
  
-#Model
-The input image is cropped before being fed into the network by removing the
-top and bottom 20% pixels so that the input shape is 96 x 320 pixels.
+# Image resolution
+The input image is cropped before being fed into the network by removing the top and bottom 30 pixels.
+The resulting 100 x 320 pixel image is subsequently resized by factor 5 for a final resolution of 20 x 64 pixels.
+The reduction in number of pixels from 51200 to 1280 corresponds to a 97.5% reduction in pixel count. This compression
+allows for much quicker calculation while maintaining a functional image input as presented in the resolution comparison.
+![Resolution reduction](img/figure_8.png)
+
+# Model architecture
 The convolutional neural network (CNN) starts with a lambda layer that normalizes the pixel values so that the range
-becomes [-1 1] instead of [0 255]. The second layer is a 1 x 1 convolution with three layers which
-effectively allows the model to automatically learn the ideal color space.
+becomes [-1, 1] instead of [0, 255]. The second layer is a 1 x 1 convolution with three layers which
+effectively allows the model to automatically learn the ideal color space (Credit: Vivek). The full model architecture
+can be seen below.
+![Model architecture](outputs/model.png)
+Every convolution was followed by RELU activation which seemed to work better than ELU.
+Dropouts were applied between the fully connected layers and it was found that fraction 0.3 was the most suitable
+  (i.e. keeping 70% of the features).
  
 #Training
 It was found that removing all data points with zero angle (straight driving) improved model performance.

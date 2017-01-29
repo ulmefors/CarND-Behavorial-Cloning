@@ -122,7 +122,7 @@ def get_subodh_model():
     return model
 
 
-def get_model():
+def get_large_model():
     ch, row, col = 3, 96, 320  # camera format
     shape = (row, col, ch)
 
@@ -161,7 +161,8 @@ def get_model():
 
     return model
 
-def get_small_model():
+
+def get_model():
     ch, row, col = 3, 20, 64  # camera format
     shape = (row, col, ch)
 
@@ -174,7 +175,7 @@ def get_small_model():
                      output_shape=shape))
 
     # 1 x 1 convolution to learn best color space (credit to Vivek blog post)
-    model.add(Convolution2D(3, 1, 1, border_mode="same", activation='relu'))
+    model.add(Convolution2D(3, 1, 1, border_mode="same"))
 
     model.add(Convolution2D(16, 3, 3, subsample=(2, 2), border_mode='valid', activation='relu'))
 
@@ -189,7 +190,7 @@ def get_small_model():
 
     model.add(Dense(1))
 
-    model.compile(optimizer=Adam(lr=0.003), loss="mse")
+    model.compile(optimizer=Adam(lr=0.002), loss="mse")
 
     return model
 
