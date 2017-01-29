@@ -88,6 +88,11 @@ resizing thus had to be done somewhat more carefully.
 Dropouts were applied between the fully connected layers and it was found that fraction 0.3 was the most suitable
 (i.e. keeping 70% of the features).
 
+## Fully connected layers
+After the convolutions the features are flattened and a single fully connected layer is introduced before the output.
+The fully connected layer has length 512 which proved a good number.
+Dropout is employed before and after this layer which in combination drops half
+
  
 #Training
 
@@ -111,7 +116,9 @@ Values between 0.15 and 0.40 were tried for adjusting steering when using left a
 instead of center camera. Both 0.25 and 0.30 worked fine for the model.
 
 ## Optimizer and learning rate
-Adam optimizer was used and learning rates in the range 0.0001-0.003.  
+Adam optimizer was used and learning rates in the range 0.0001-0.005.
+Higher learning rates than the default often produced good results with very little training
+although there were instances where training did get stuck occasionally.
 
 ## Hardware
 Training was performed on a Macbook Pro 15" Mid 2015 in its basic configuration of quad-core Haswell CPU [(full technical specs)](https://support.apple.com/kb/SP719).

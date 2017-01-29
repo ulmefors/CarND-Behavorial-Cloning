@@ -190,7 +190,7 @@ def get_model():
 
     model.add(Dense(1))
 
-    model.compile(optimizer=Adam(lr=0.002), loss="mse")
+    model.compile(optimizer=Adam(lr=0.005), loss="mse")
 
     return model
 
