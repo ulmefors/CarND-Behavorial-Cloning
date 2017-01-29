@@ -13,10 +13,14 @@ of more than 8000 rows, each of which has three front-facing camera images as we
 Positive reading indicates right turn and negative reading left turn. For complex CNNs it's always desired to
 have access to large amounts of data in order to build a model that generalizes well.
  
-  The sample data had the following distribution with a bias for driving straight. It was found that using this data as-is resulted in the car
-  driving straight when arriving at the first corner, presumably because the model can minimize error
-  by predicting steering values around 0. By removing all rows with steering = 0 we obtain a more balanced distribution.
-  ![Steering distribution](img/figure_7.png)
+The sample data had the following distribution with a bias for driving straight. It was found that using this data as-is resulted in the car
+driving straight when arriving at the first corner, presumably because the model can minimize error
+by predicting steering values around 0. By removing all rows with steering = 0 we obtain a more balanced distribution.
+![Steering distribution](img/figure_7.png)
+  
+The distribution after performing data augmentation is more uniform still.
+The techniques employed are described in the following section.
+![Augmented steering distribution](img/figure_9.png)
  
 ## Data augmentation
 Data augmentation can be used to create more training data without additional recording being necessary. The data
@@ -48,6 +52,8 @@ were augmented by adjusting the brightness channel after having converted the im
 multiplied by a random correction factor ranging from 0.25 to 1.00. Examples are plotted below.
 ![Brightness modification](img/figure_6.png)
 Thanks to Vivek Yadav for the idea and suggestion for implementation.
+
+
  
 # Image resolution
 The input image is cropped before being fed into the network by removing the top and bottom 30 pixels.
@@ -57,26 +63,62 @@ allows for much quicker calculation while maintaining a functional image input a
 ![Resolution reduction](img/figure_8.png)
 
 # Model architecture
-The convolutional neural network (CNN) starts with a lambda layer that normalizes the pixel values so that the range
-becomes [-1, 1] instead of [0, 255]. The second layer is a 1 x 1 convolution with three layers which
-effectively allows the model to automatically learn the ideal color space (Credit: Vivek). The full model architecture
-can be seen below.
+The full model architecture can be seen below.
 ![Model architecture](outputs/model.png)
+
+## Normalization
+The convolutional neural network (CNN) starts with a lambda layer that normalizes the pixel values so that the range
+becomes [-1, 1] instead of [0, 255].
+
+## Color space convolution
+The second layer is a 1 x 1 convolution with three filters which effectively allows 
+the model to automatically learn the ideal color space (Credit: Vivek). This convolution
+does not reduce pixel count and does not use activation since we want to conserve
+ all information as input to the rest of the network.
+
+## Convolutions
 Every convolution was followed by RELU activation which seemed to work better than ELU.
+The only exception was the first convolution corresponding to the color space (explained above).
+The 3 main convolutions all use 16 3x3 filters which provides a good balance between necessary sophistication and training speed.
+Strides decrease from 2 in the first convolution to only 1 in the following two convolutions.
+This choice was made since the images were resized agressively prior to being fed into the network and further
+resizing thus had to be done somewhat more carefully.
+
+## Dropout
 Dropouts were applied between the fully connected layers and it was found that fraction 0.3 was the most suitable
-  (i.e. keeping 70% of the features).
+(i.e. keeping 70% of the features).
+
  
 #Training
+
+## Straight driving data
 It was found that removing all data points with zero angle (straight driving) improved model performance.
+Experiments were run with re-adding a fraction of the straight driving in the data set.
+Surprisingly these experiments resulted in worse performance with increasing validation error.
 
+## Activations
+It was found that removing activation between the final fully connected layer and the output layer
+increased performance which was somewhat surprising.
 
-Experiment with 10% of the straight driving in the data set. Worse performance. Validation error going up.
+## Image resolution
+Most of the initial tests were run using original image resolution of 160 x 320 pixels
+with models inspired by the comma.ai model and the Nvidia model.
+Experiments with much smaller input images and correspondingly different models
+led the development away from this starting point to the model used now.
 
-Seems like RELU performs better than ELU
+## Left/Right camera adjustment
+Values between 0.15 and 0.40 were tried for adjusting steering when using left and right cameras
+instead of center camera. Both 0.25 and 0.30 worked fine for the model.
 
-Training was performed on a Macbook Pro 15" Mid 2015 in its basic configuration [(technical specs)](https://support.apple.com/kb/SP719).
+## Optimizer and learning rate
+Adam optimizer was used and learning rates in the range 0.0001-0.003.  
 
+## Hardware
+Training was performed on a Macbook Pro 15" Mid 2015 in its basic configuration of quad-core Haswell CPU [(full technical specs)](https://support.apple.com/kb/SP719).
+No GPU available which means training time of roughly 60 seconds per epoch with 23,000 images.
+Training was performed with 5-10 epochs giving total training time of 5-10 minutes using CPU only.
 
+# Credits
 - NVIDIA paper [End to End Learning for Self-Driving Cars](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf)
 - Vivek Yadav [blog post](https://chatbotslife.com/using-augmentation-to-mimic-human-driving-496b569760a9#.1nbgoagsm)
 - comma.ai [steering model code](https://github.com/commaai/research/blob/master/train_steering_model.py)

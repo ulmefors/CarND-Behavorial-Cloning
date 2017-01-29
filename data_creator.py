@@ -30,13 +30,13 @@ def plot_count(data_frame):
 
 
 def plot_augmented_count(data_frame):
-    nb_bins = 100
+    nb_bins = 50
 
     #data_original = data_frame['steering']
     #data_non_zero = data_original[data_original != 0]
 
     data_non_zero = data_frame[data_frame['steering'] != 0]
-    data_non_zero = data_non_zero.sample(n=1000)
+    #data_non_zero = data_non_zero.sample(n=300)
     original_steering = data_non_zero['steering']
 
     augmented_steering = []
@@ -49,12 +49,14 @@ def plot_augmented_count(data_frame):
     plt.title('Sampled steering')
     plt.xlabel('Steering angle')
     plt.ylabel('Sample count')
+    plt.xlim([-1, 1])
 
     plt.subplot(1, 2, 2)
     plt.hist(augmented_steering, nb_bins)
     plt.title('Augmented steering')
     plt.xlabel('Steering angle')
     plt.ylabel('Sample count')
+    plt.xlim([-1, 1])
 
     plt.show()
 
