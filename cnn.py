@@ -3,9 +3,13 @@ from keras.models import Sequential
 from keras.optimizers import Adam
 
 
+'''
+    Used for initial testing but eventually abandoned.
+'''
 def get_nvidia_model():
     # https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
     # Based on Nvidia model with some personal tweaks and inspiration from Vivek @ Slack
+
 
     learning_rate = 0.001
 
@@ -45,7 +49,9 @@ def get_nvidia_model():
 
     return model
 
-
+'''
+    Used for initial testing but eventually abandoned.
+'''
 def get_comma_model():
     # https: // github.com / commaai / research / blob / master / train_steering_model.py
 
@@ -78,6 +84,9 @@ def get_comma_model():
     return model
 
 
+'''
+    Used for initial testing but eventually abandoned.
+'''
 def get_subodh_model():
     ch, row, col = 3, 64, 64  # camera format
     shape = (row, col, ch)
@@ -122,6 +131,9 @@ def get_subodh_model():
     return model
 
 
+'''
+    Used for initial testing but eventually abandoned.
+'''
 def get_large_model():
     ch, row, col = 3, 96, 320  # camera format
     shape = (row, col, ch)
@@ -161,7 +173,9 @@ def get_large_model():
 
     return model
 
-
+'''
+    Final model used for submission
+'''
 def get_model():
     ch, row, col = 3, 20, 64  # camera format
     shape = (row, col, ch)
@@ -190,7 +204,7 @@ def get_model():
 
     model.add(Dense(1))
 
-    model.compile(optimizer=Adam(lr=0.005), loss="mse")
+    model.compile(optimizer=Adam(lr=0.004), loss="mse")
 
     return model
 

@@ -7,7 +7,7 @@ from keras.preprocessing.image import img_to_array, load_img
 
 
 def plot_count(data_frame):
-    nb_bins = 100
+    nb_bins = 50
 
     data_original = data_frame['steering']
     data_non_zero = data_original[data_original != 0]
@@ -32,11 +32,7 @@ def plot_count(data_frame):
 def plot_augmented_count(data_frame):
     nb_bins = 50
 
-    #data_original = data_frame['steering']
-    #data_non_zero = data_original[data_original != 0]
-
     data_non_zero = data_frame[data_frame['steering'] != 0]
-    #data_non_zero = data_non_zero.sample(n=300)
     original_steering = data_non_zero['steering']
 
     augmented_steering = []
@@ -145,11 +141,13 @@ def main():
     sample = 3918 # 3968
     data_point = data_frame.loc[sample]
 
+    # Uncomment to run visualizations
+
     # plot_three_cameras(data_point)
     # plot_horozontal_flip(data_point)
     # plot_brightnes_modification(data_point)
     # plot_count(data_frame)
-    plot_augmented_count(data_frame)
+    # plot_augmented_count(data_frame)
     # plot_image_res(data_point)
 
 

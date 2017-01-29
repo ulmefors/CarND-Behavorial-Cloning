@@ -2,15 +2,15 @@
 
 # Behavioral cloning to steer a car
 This project is from [Udacity Self-Driving Car Engineer Nanodegree](https://www.udacity.com/drive) where the aim
-is to teach a car to steer around a track by feeding camera images and steering angles into a Convolutional Neural Network.
- The model is not manually taught what features to prioritize (e.g. lane markings) but must create helpful features itself
- in order to predict steering angle based on the camera images.
+is to teach a car to steer around a track.
+Camera images and steering angles are fed into a Convolutional Neural Network.
+The CNN learns to create and prioritize features that enable steering angle prediction using only images as input.
 
 ## Data
 The data used was entirely from Udacity 
 [Track 1 sample data](https://d17h27t6h515a5.cloudfront.net/topher/2016/December/584f6edd_data/data.zip) which consists
 of more than 8000 rows, each of which has three front-facing camera images as well as a steering wheel reading.
-Positive reading indicates right turn and negative reading left turn. For complex CNNs it's always desired to
+Positive and negative readings correspond to right and left turn respectively. For complex CNNs it's always desired to
 have access to large amounts of data in order to build a model that generalizes well.
  
 The sample data had the following distribution with a bias for driving straight. It was found that using this data as-is resulted in the car
@@ -31,8 +31,10 @@ augmentation techniques used in this project are
 
 ### Left/right camera offset
 For every data point there are three camera images taken at the left, center and right of the car.
-In the simulation we will predict steering angle using only the center image. However, by adding a steering offset
-to the left and right images we can use these camera angles from the training data. For example, the center image below
+In the simulation we will predict steering angle using only the center image.
+
+However, by adding a steering offset to the left and right images we can use these 
+side camera angles from the training data. For example, the center image below
  shows a situation where the driver steers slightly right at 0.177. By adding an offset of 0.25 to the left image we
  get a harder right turn which would be necessary if driving closer to the edge as in the left image. The opposite
  adjustment is made in the right image which instead results in a slight left turn of -0.073. 
@@ -53,30 +55,28 @@ multiplied by a random correction factor ranging from 0.25 to 1.00. Examples are
 ![Brightness modification](img/figure_6.png)
 Thanks to Vivek Yadav for the idea and suggestion for implementation.
 
-
- 
-# Image resolution
+## Image resolution
 The input image is cropped before being fed into the network by removing the top and bottom 30 pixels.
 The resulting 100 x 320 pixel image is subsequently resized by factor 5 for a final resolution of 20 x 64 pixels.
 The reduction in number of pixels from 51200 to 1280 corresponds to a 97.5% reduction in pixel count. This compression
 allows for much quicker calculation while maintaining a functional image input as presented in the resolution comparison.
 ![Resolution reduction](img/figure_8.png)
 
-# Model architecture
+## Model architecture
 The full model architecture can be seen below.
 ![Model architecture](outputs/model.png)
 
-## Normalization
+### Normalization
 The convolutional neural network (CNN) starts with a lambda layer that normalizes the pixel values so that the range
 becomes [-1, 1] instead of [0, 255].
 
-## Color space convolution
+### Color space convolution
 The second layer is a 1 x 1 convolution with three filters which effectively allows 
-the model to automatically learn the ideal color space (Credit: Vivek). This convolution
+the model to automatically learn the ideal color space (credit: Vivek Yadav). This convolution
 does not reduce pixel count and does not use activation since we want to conserve
  all information as input to the rest of the network.
 
-## Convolutions
+### Convolutions
 Every convolution was followed by RELU activation which seemed to work better than ELU.
 The only exception was the first convolution corresponding to the color space (explained above).
 The 3 main convolutions all use 16 3x3 filters which provides a good balance between necessary sophistication and training speed.
@@ -84,48 +84,56 @@ Strides decrease from 2 in the first convolution to only 1 in the following two 
 This choice was made since the images were resized agressively prior to being fed into the network and further
 resizing thus had to be done somewhat more carefully.
 
-## Dropout
+### Dropout
 Dropouts were applied between the fully connected layers and it was found that fraction 0.3 was the most suitable
 (i.e. keeping 70% of the features).
 
-## Fully connected layers
+### Fully connected layers
 After the convolutions the features are flattened and a single fully connected layer is introduced before the output.
-The fully connected layer has length 512 which proved a good number.
-Dropout is employed before and after this layer which in combination drops half
+The fully connected layer has length 512 which proved to be a good number.
+Increasing this number quickly increases the number of trainable model parameters 
+since the flattened layer preceeding this layer contains 2160 parameters.
+Dropout is employed before and after this layer which in combination drops 51% of features.
 
- 
-#Training
+##Training
 
-## Straight driving data
+### Straight driving data
 It was found that removing all data points with zero angle (straight driving) improved model performance.
 Experiments were run with re-adding a fraction of the straight driving in the data set.
 Surprisingly these experiments resulted in worse performance with increasing validation error.
 
-## Activations
-It was found that removing activation between the final fully connected layer and the output layer
-increased performance which was somewhat surprising.
+### Activations
+It was found that removing ELU activation between the final fully connected layer and the output layer
+improved performance. This finding was somewhat surprising.
 
-## Image resolution
+### Image resolution
 Most of the initial tests were run using original image resolution of 160 x 320 pixels
 with models inspired by the comma.ai model and the Nvidia model.
-Experiments with much smaller input images and correspondingly different models
-led the development away from this starting point to the model used now.
+Subsequent experiments with much smaller input images and correspondingly different models
+led the development away from the Comma/Nvidia starting point to the model described here.
 
-## Left/Right camera adjustment
+### Left/Right camera adjustment
 Values between 0.15 and 0.40 were tried for adjusting steering when using left and right cameras
 instead of center camera. Both 0.25 and 0.30 worked fine for the model.
 
-## Optimizer and learning rate
-Adam optimizer was used and learning rates in the range 0.0001-0.005.
+### Optimizer and learning rate
+Adam optimizer was used and learning rates tried were in the range 0.0001-0.02.
 Higher learning rates than the default often produced good results with very little training
-although there were instances where training did get stuck occasionally.
+although exceeding learning rate = 0.01 often caused training to get stuck completely.
+It turns out that successful models can be trained using learning rate of 0.003-0.005.
 
-## Hardware
+### Validation
+Part of the training data is used as a validation set.
+The training data was augmented using the methods explained in this document whereas the validation data
+was left as-is since I didn't want to compare the prediction to artificially created images.
+The distinction was performed in the generator method.
+
+### Hardware
 Training was performed on a Macbook Pro 15" Mid 2015 in its basic configuration of quad-core Haswell CPU [(full technical specs)](https://support.apple.com/kb/SP719).
 No GPU available which means training time of roughly 60 seconds per epoch with 23,000 images.
 Training was performed with 5-10 epochs giving total training time of 5-10 minutes using CPU only.
 
-# Credits
+## Credits
 - NVIDIA paper [End to End Learning for Self-Driving Cars](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf)
 - Vivek Yadav [blog post](https://chatbotslife.com/using-augmentation-to-mimic-human-driving-496b569760a9#.1nbgoagsm)
 - comma.ai [steering model code](https://github.com/commaai/research/blob/master/train_steering_model.py)
