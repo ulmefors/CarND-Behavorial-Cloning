@@ -161,27 +161,26 @@ def get_model():
 
     return model
 
-
 def get_small_model():
-    ch, row, col = 3, 18, 48  # camera format
+    ch, row, col = 3, 20, 64  # camera format
     shape = (row, col, ch)
 
     model = Sequential()
 
     # Normalization performed in the model using Lambda layer
     # Credit to comma.ai https://github.com/commaai/research/blob/master/train_steering_model.py
-    model.add(Lambda(lambda x: x / 127.5 - 1.0,
+    model.add(Lambda(lambda x: x / 127.5 - 1.,
                      input_shape=shape,
                      output_shape=shape))
 
     # 1 x 1 convolution to learn best color space (credit to Vivek blog post)
     model.add(Convolution2D(3, 1, 1, border_mode="same", activation='relu'))
 
-    model.add(Convolution2D(16, 3, 3, subsample=(2, 2), border_mode='valid', activation='relu'))
+    model.add(Convolution2D(8, 2, 2, subsample=(2, 2), border_mode='valid', activation='relu'))
 
-    model.add(Convolution2D(32, 3, 3, subsample=(2, 2), border_mode='valid', activation='relu'))
+    model.add(Convolution2D(16, 2, 2, subsample=(2, 2), border_mode='valid', activation='relu'))
 
-    model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode='valid', activation='relu'))
+    model.add(Convolution2D(32, 2, 2, subsample=(1, 1), border_mode='valid', activation='relu'))
     model.add(Flatten())
     model.add(Dropout(0.5))
 
@@ -189,16 +188,15 @@ def get_small_model():
     model.add(Dropout(0.5))
     model.add(ELU())
 
-    model.add(Dense(128))
-    model.add(Dropout(0.375))
+    model.add(Dense(64))
     model.add(ELU())
 
-    model.add(Dense(64))
+    model.add(Dense(16))
     model.add(ELU())
 
     model.add(Dense(1))
 
-    model.compile(optimizer=Adam(lr=0.0003), loss="mse")
+    model.compile(optimizer=Adam(lr=0.0001), loss="mse")
 
     return model
 

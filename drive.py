@@ -45,7 +45,7 @@ def telemetry(sid, data):
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
 
     # Try to maintain speed close to goal speed
-    goal_speed = 12.0
+    goal_speed = 20.0
     diff = goal_speed - float(speed)
     # Proportional control
     c_p = 1.0
