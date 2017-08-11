@@ -35,7 +35,7 @@ def augment_brightness_camera_images(image):
 
 def preprocess_image(image):
     # Crop image - remove sky and car hood
-    image = image[32:128, :, :]
+    image = image[30:130, :, :]
 
     # Reduce image size using CV2 INTER_AREA
     # http://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#resize
@@ -86,7 +86,7 @@ def get_generator(data_frame, batch_size=32, validation=False):
     nb_data = data_frame.shape[0]
 
     i = 0
-    while(True):
+    while True:
         start = i * batch_size
         end = start + batch_size
 
@@ -108,9 +108,10 @@ def get_generator(data_frame, batch_size=32, validation=False):
 
 
 def plot_loss(history):
-    plt.plot(history.history['loss'] / history.history['loss'][0], '-b')
-    plt.plot(history.history['val_loss'] / history.history['val_loss'][0], '-r')
+    plt.plot(history.history['loss'], '-b')
+    plt.plot(history.history['val_loss'], '-r')
     plt.legend(['training', 'validation'])
+    plt.yscale('log')
     plt.show()
 
 
@@ -129,13 +130,13 @@ def main():
     validation_data = data_frame.loc[num_rows_training:]
 
     # Remove all zero angle data from training set to avoid straight driving bias
-    # This is quite drastic but proved quite effective
+    # This is quite drastic but proved effective
     training_data = training_data[training_data.steering != 0]
 
     training_generator = get_generator(training_data, batch_size=BATCH_SIZE)
     validation_data_generator = get_generator(validation_data, batch_size=BATCH_SIZE, validation=True)
 
-    model = cnn.get_small_model()
+    model = cnn.get_model()
 
     model.summary()
 
@@ -145,7 +146,7 @@ def main():
     samples_per_epoch = (training_data.shape[0] * 8 // BATCH_SIZE) * BATCH_SIZE
 
     history = model.fit_generator(training_generator, validation_data=validation_data_generator,
-        samples_per_epoch=samples_per_epoch, nb_epoch=40, nb_val_samples=validation_data.shape[0])
+        samples_per_epoch=samples_per_epoch, nb_epoch=8, nb_val_samples=validation_data.shape[0])
 
     print("Saving model weights and configuration file.")
 
