@@ -86,7 +86,7 @@ def get_generator(data_frame, batch_size=32, validation=False):
     nb_data = data_frame.shape[0]
 
     i = 0
-    while(True):
+    while True:
         start = i * batch_size
         end = start + batch_size
 

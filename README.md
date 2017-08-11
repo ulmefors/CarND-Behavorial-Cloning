@@ -64,6 +64,7 @@ allows for much quicker calculation while maintaining a functional image input a
 
 ## Model architecture
 The full model architecture can be seen below.
+
 ![Model architecture](outputs/model.png)
 
 ### Normalization
